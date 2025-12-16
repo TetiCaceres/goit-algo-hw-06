@@ -1,5 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+from BFS import bfs_path
+from DFS import dfs_path
 
 # Create a graph representing Kyiv Metro
 metro = nx.Graph()
@@ -20,7 +22,7 @@ blue_line = [
     "Ipodrom", "Teremky"
 ]
 
-# Green line (Syretsko-Pecherska) – 23 stations
+# Green line (Syretsko-Pecherska) 
 green_line = [
     "Syrets", "Dorohozhychi", "Lukianivska", "Zoloti Vorota", "Palats Sportu",
     "Klovska", "Pecherska", "Druzhby Narodiv", "Vydubychi", "Slavutych",
@@ -58,3 +60,28 @@ print("Stations count:", metro.number_of_nodes())
 print("Connections count:", metro.number_of_edges())
 print("Degrees:", dict(metro.degree()))
 
+# ---------------------------
+# Task 2: DFS and BFS
+# ---------------------------
+
+# Example paths
+start = "Syrets"
+goal = "Teremky"
+
+# Find paths using DFS and BFS
+dfs_result = dfs_path(metro, start, goal)
+bfs_result = bfs_path(metro, start, goal)
+
+# Display results
+print("DFS path:", dfs_result)
+print("BFS path:", bfs_result)
+print("DFS length:", len(dfs_result))
+print("BFS length:", len(bfs_result))
+
+# Explanation of differences
+if len(dfs_result) > len(bfs_result):
+    print("\nDFS (Depth-First Search) is exploring deep into the graph, often visiting unnecessary stations.")
+    print("It does not guarantee the shortest path in terms of the number of nodes traversed.")
+
+print("\nBFS (Breadth-First Search) explores all the neighbors of each node level by level,")
+print("so it always guarantees the shortest path by the number of edges between start and goal.")
