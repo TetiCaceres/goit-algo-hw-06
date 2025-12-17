@@ -2,6 +2,19 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from BFS import bfs_path
 from DFS import dfs_path
+from dijkstra import dijkstra, get_path
+
+# =======================
+# Helper function
+# =======================
+def print_header(title):
+    print("\n" + "=" * 70)
+    print(title)
+    print("=" * 70)
+
+# =======================
+# TASK 1: Kyiv Metro Graph
+# =======================
 
 # Create a graph representing Kyiv Metro
 metro = nx.Graph()
@@ -33,22 +46,21 @@ green_line = [
 all_stations = red_line + blue_line + green_line
 metro.add_nodes_from(all_stations)
 
-# Edges – Red line connections
-red_edges = [(red_line[i], red_line[i+1]) for i in range(len(red_line)-1)]
 
-# Edges – Blue line connections
-blue_edges = [(blue_line[i], blue_line[i+1]) for i in range(len(blue_line)-1)]
+# Add edges (2 min travel per station)
+for line in [red_line, blue_line, green_line]:
+    for i in range(len(line) - 1):
+        metro.add_edge(line[i], line[i+1], weight=2)
 
-# Edges – Green line connections
-green_edges = [(green_line[i], green_line[i+1]) for i in range(len(green_line)-1)]
-
+# Interchanges (longer time – 5 minutes)
 interchanges = [
-    ("Teatralna", "Zoloti Vorota"),  # Red ↔ Green
-    ("Khreshchatyk", "Maidan Nezalezhnosti"),  # Red ↔ Blue
-    ("Ploshcha Ukrainskykh Heroiv", "Palats Sportu")  # Blue ↔ Green
+    ("Teatralna", "Zoloti Vorota", 5),           # Red ↔ Green
+    ("Khreshchatyk", "Maidan Nezalezhnosti", 5), # Red ↔ Blue
+    ("Ploshcha Ukrainskykh Heroiv", "Palats Sportu", 5)  # Blue ↔ Green
 ]
 
-metro.add_edges_from(red_edges + blue_edges + green_edges + interchanges)
+for u, v, w in interchanges:
+    metro.add_edge(u, v, weight=w)
 
 # Plot
 plt.figure(figsize=(14,7))
@@ -56,9 +68,14 @@ nx.draw(metro, with_labels=True, node_size=700, font_size=8, node_color="skyblue
 plt.title("Kyiv Metro Graph (Accurate Stations & Transfers)")
 plt.show()
 
-print("Stations count:", metro.number_of_nodes())
-print("Connections count:", metro.number_of_edges())
-print("Degrees:", dict(metro.degree()))
+
+# Graph info
+print_header("TASK 1: GRAPH ANALYSIS")
+print(f"Total stations: {metro.number_of_nodes()}")
+print(f"Total connections: {metro.number_of_edges()}")
+print("\nStations degree (connections count):")
+for station, degree in metro.degree():
+    print(f"  - {station}: {degree}")
 
 # ---------------------------
 # Task 2: DFS and BFS
@@ -72,16 +89,42 @@ goal = "Teremky"
 dfs_result = dfs_path(metro, start, goal)
 bfs_result = bfs_path(metro, start, goal)
 
-# Display results
-print("DFS path:", dfs_result)
-print("BFS path:", bfs_result)
-print("DFS length:", len(dfs_result))
-print("BFS length:", len(bfs_result))
+print_header("TASK 2: DFS vs BFS PATH SEARCH")
+print(f"Start station: {start}")
+print(f"End station:   {goal}")
 
-# Explanation of differences
-if len(dfs_result) > len(bfs_result):
-    print("\nDFS (Depth-First Search) is exploring deep into the graph, often visiting unnecessary stations.")
-    print("It does not guarantee the shortest path in terms of the number of nodes traversed.")
+print("\nDFS result:")
+print(" → ".join(dfs_result))
+print(f"Stations count: {len(dfs_result)}")
 
-print("\nBFS (Breadth-First Search) explores all the neighbors of each node level by level,")
-print("so it always guarantees the shortest path by the number of edges between start and goal.")
+print("\nBFS result:")
+print(" → ".join(bfs_result))
+print(f"Stations count: {len(bfs_result)}")
+
+print("\nExplanation:")
+print(
+    "DFS explores one branch deeply and does not guarantee the shortest path.\n"
+    "BFS explores level by level and guarantees the shortest path by number of stations."
+)
+
+# ---------------------------
+# Task 3: Dijkstra Algorithm
+# ---------------------------
+
+print_header("TASK 3: DIJKSTRA SHORTEST PATH (BY TIME)")
+
+start_station = "Syrets"
+target_stations = ["Teremky", "Lisova", "Akademmistechko"]
+
+
+distances, previous = dijkstra(metro, start_station)
+
+print(f"Start station: {start_station}")
+
+for target in target_stations:
+    path = get_path(previous, start_station, target)
+    time = distances[target]
+
+    print("\nDestination:", target)
+    print("Route:", " → ".join(path))
+    print(f"Travel time: {time} minutes")
